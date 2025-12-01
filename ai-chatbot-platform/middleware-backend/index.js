@@ -31,8 +31,9 @@ app.use(cors({
 }));
 
 // Initialize Gemini
+// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+// Model initialization moved inside request handler to support dynamic system instructions
 
 // Routes
 app.post('/api/v1/chat', async (req, res) => {
@@ -68,17 +69,17 @@ app.post('/api/v1/chat', async (req, res) => {
             // Simple check: does the origin include the allowed URL? 
             // In production, use strict URL parsing.
             if (allowedUrl && !origin.includes(allowedUrl) && !origin.includes('localhost')) {
-                 console.warn(`Origin mismatch: ${origin} vs ${allowedUrl}`);
-                 // For MVP, we might log it but not block strictly if testing from localhost, 
-                 // but let's block if it's completely different.
-                 // return res.status(403).json({ error: 'Origin not allowed' });
+                console.warn(`Origin mismatch: ${origin} vs ${allowedUrl}`);
+                // For MVP, we might log it but not block strictly if testing from localhost, 
+                // but let's block if it's completely different.
+                // return res.status(403).json({ error: 'Origin not allowed' });
             }
         }
 
         // 3. Fetch Conversation History
         let conversationRecord;
         let history = [];
-        
+
         try {
             conversationRecord = await pb.collection('Conversations').getFirstListItem(`sessionId="${sessionId}"`);
             history = conversationRecord.messages || [];
@@ -99,7 +100,13 @@ app.post('/api/v1/chat', async (req, res) => {
 
         // 4. Construct Gemini Prompt
         const systemInstruction = clientRecord.contextText || "You are a helpful assistant.";
-        
+
+        // Initialize model with system instruction
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            systemInstruction: systemInstruction
+        });
+
         // Convert history to Gemini format
         // Gemini expects: { role: "user" | "model", parts: [{ text: "..." }] }
         // Our stored history might be simple JSON. Let's assume our storage format is compatible or we convert.
@@ -111,7 +118,7 @@ app.post('/api/v1/chat', async (req, res) => {
 
         const chat = model.startChat({
             history: chatHistory,
-            systemInstruction: { role: "system", parts: [{ text: systemInstruction }] }
+            // systemInstruction removed from here
         });
 
         // 5. Call Gemini API
