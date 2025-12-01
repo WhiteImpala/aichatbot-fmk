@@ -1,4 +1,4 @@
-(function() {
+(function () {
     // Configuration
     const SCRIPT_TAG = document.currentScript;
     const CHATBOT_ID = SCRIPT_TAG.getAttribute('data-chatbot-id');
@@ -201,10 +201,61 @@
         if (isOpen) input.focus();
     }
 
+    function parseMarkdown(text) {
+        // 1. Escape HTML to prevent XSS (basic)
+        let safeText = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+        // 2. Bold: **text** -> <strong>text</strong>
+        safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        // 3. Lists: * item -> <ul><li>item</li></ul>
+        const lines = safeText.split('\n');
+        let inList = false;
+        let processedLines = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            let isList = line.trim().startsWith('* ');
+
+            if (isList) {
+                if (!inList) {
+                    processedLines.push('<ul>');
+                    inList = true;
+                }
+                processedLines.push(`<li>${line.trim().substring(2)}</li>`);
+            } else {
+                if (inList) {
+                    processedLines.push('</ul>');
+                    inList = false;
+                }
+                // Add <br> for text lines, except the last one (optional, but cleaner)
+                // Actually, standard behavior is newlines become <br>
+                if (i < lines.length - 1) {
+                    processedLines.push(line + '<br>');
+                } else {
+                    processedLines.push(line);
+                }
+            }
+        }
+        if (inList) {
+            processedLines.push('</ul>');
+        }
+
+        return processedLines.join('');
+    }
+
     function addMessage(text, type) {
         const msg = document.createElement('div');
         msg.className = `message ${type}`;
-        msg.textContent = text;
+
+        // Use innerHTML with parsed markdown
+        msg.innerHTML = parseMarkdown(text);
+
         messagesContainer.appendChild(msg);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
@@ -231,7 +282,7 @@
             });
 
             const data = await response.json();
-            
+
             if (data.error) {
                 addMessage('Error: ' + data.error, 'bot');
             } else {
@@ -251,9 +302,9 @@
     // Event Listeners
     chatButton.addEventListener('click', toggleChat);
     closeBtn.addEventListener('click', toggleChat);
-    
+
     sendBtn.addEventListener('click', sendMessage);
-    
+
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
