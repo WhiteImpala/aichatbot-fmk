@@ -157,6 +157,25 @@
         .typing-indicator.visible {
             display: block;
         }
+        .message table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+        .message th,
+        .message td {
+            border: 1px solid #D1D5DB;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        .message th {
+            background: #F3F4F6;
+            font-weight: 600;
+        }
+        .message tr:nth-child(even) {
+            background: #F9FAFB;
+        }
     `;
     shadow.appendChild(style);
 
@@ -213,37 +232,93 @@
         // 2. Bold: **text** -> <strong>text</strong>
         safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-        // 3. Lists: * item -> <ul><li>item</li></ul>
+        // 3. Process lines for tables, lists, and text
         const lines = safeText.split('\n');
         let inList = false;
+        let inTable = false;
         let processedLines = [];
+        let i = 0;
 
-        for (let i = 0; i < lines.length; i++) {
+        while (i < lines.length) {
             let line = lines[i];
             let isList = line.trim().startsWith('* ');
+            let isTableRow = line.trim().startsWith('|') && line.trim().endsWith('|');
 
+            // Check if this is the start of a table (current line and next line are table rows)
+            if (isTableRow && !inTable && i + 1 < lines.length) {
+                let nextLine = lines[i + 1].trim();
+                // Check if next line is a separator (contains only |, -, and spaces)
+                if (nextLine.match(/^\|[\s\-:|]+\|$/)) {
+                    // Start table
+                    if (inList) {
+                        processedLines.push('</ul>');
+                        inList = false;
+                    }
+                    inTable = true;
+                    processedLines.push('<table>');
+
+                    // Parse header
+                    processedLines.push('<thead><tr>');
+                    let headers = line.split('|').filter(h => h.trim());
+                    headers.forEach(h => {
+                        processedLines.push(`<th>${h.trim()}</th>`);
+                    });
+                    processedLines.push('</tr></thead>');
+
+                    // Skip separator line
+                    i += 2;
+                    processedLines.push('<tbody>');
+                    continue;
+                }
+            }
+
+            // Continue table rows
+            if (inTable && isTableRow) {
+                processedLines.push('<tr>');
+                let cells = line.split('|').filter(c => c.trim());
+                cells.forEach(c => {
+                    processedLines.push(`<td>${c.trim()}</td>`);
+                });
+                processedLines.push('</tr>');
+                i++;
+                continue;
+            }
+
+            // End table if we were in one
+            if (inTable && !isTableRow) {
+                processedLines.push('</tbody></table>');
+                inTable = false;
+            }
+
+            // Handle lists
             if (isList) {
                 if (!inList) {
                     processedLines.push('<ul>');
                     inList = true;
                 }
                 processedLines.push(`<li>${line.trim().substring(2)}</li>`);
-            } else {
+            } else if (!isTableRow) {
                 if (inList) {
                     processedLines.push('</ul>');
                     inList = false;
                 }
-                // Add <br> for text lines, except the last one (optional, but cleaner)
-                // Actually, standard behavior is newlines become <br>
+                // Add <br> for text lines, except the last one
                 if (i < lines.length - 1) {
                     processedLines.push(line + '<br>');
                 } else {
                     processedLines.push(line);
                 }
             }
+
+            i++;
         }
+
+        // Close any open tags
         if (inList) {
             processedLines.push('</ul>');
+        }
+        if (inTable) {
+            processedLines.push('</tbody></table>');
         }
 
         return processedLines.join('');
