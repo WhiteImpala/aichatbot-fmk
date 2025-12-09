@@ -35,6 +35,11 @@ app.use(cors({
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // Model initialization moved inside request handler to support dynamic system instructions
 
+// Health check endpoint for Docker
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Routes
 app.post('/api/v1/chat', async (req, res) => {
     try {

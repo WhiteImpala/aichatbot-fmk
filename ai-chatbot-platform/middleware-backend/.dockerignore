@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+
+# Environment files (will be provided at runtime)
+.env
+.env.local
+.env.*.local
+
+# Development files
+*.log
+npm-debug.log*
+
+# Test files
+test_*.js
+*.test.js
+*.spec.js
+
+# IDE
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Git
+.git
+.gitignore
