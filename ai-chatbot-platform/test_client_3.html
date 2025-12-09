@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Test Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        code {
+            background: #f4f4f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .note {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Chatbot Integration Test</h1>
+
+    <div class="note">
+        <strong>Setup Required:</strong>
+        <ol>
+            <li>Go to your Admin Dashboard.</li>
+            <li>Create a new Chatbot (or copy the ID of an existing one).</li>
+            <li>Open this file (<code>test_client.html</code>) in a text editor.</li>
+            <li>Replace <code>YOUR_CHATBOT_ID_HERE</code> in the script tag below with your actual Chatbot ID.</li>
+            <li>Save and refresh this page.</li>
+        </ol>
+    </div>
+
+    <p>The chat widget should appear in the bottom right corner.</p>
+
+    <!-- Chatbot Widget -->
+    <!-- Assuming the Admin Frontend is running on localhost:5173 -->
+    <script src="http://localhost:5173/widget.js" data-chatbot-id="bot_9r00kkgoy"></script>
+</body>
+
+</html>
