@@ -2,7 +2,7 @@
     // Configuration
     const SCRIPT_TAG = document.currentScript;
     const CHATBOT_ID = SCRIPT_TAG.getAttribute('data-chatbot-id');
-    const API_URL = 'http://localhost:3000/api/v1/chat'; // Should be configurable or detected
+    const API_URL = SCRIPT_TAG.getAttribute('data-api-url') || 'http://localhost:3000/api/v1/chat';
 
     if (!CHATBOT_ID) {
         console.error('Chatbot Widget: Missing data-chatbot-id attribute');
