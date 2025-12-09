@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import pb from '../lib/pocketbase';
-import { Plus, Trash2, Edit2, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, Copy, Code } from 'lucide-react';
+
+// Get middleware URL from environment variable
+const MIDDLEWARE_URL = import.meta.env.VITE_MIDDLEWARE_URL || 'http://localhost:3000';
 
 const Dashboard = () => {
   const [clients, setClients] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
+  const [embedCodeClient, setEmbedCodeClient] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     websiteUrl: '',
@@ -75,6 +79,21 @@ const Dashboard = () => {
     }
   };
 
+  const generateEmbedCode = (chatbotId) => {
+    const widgetUrl = `${window.location.origin}/widget.js`;
+    const apiUrl = `${MIDDLEWARE_URL}/api/v1/chat`;
+    return `<script src="${widgetUrl}" data-chatbot-id="${chatbotId}" data-api-url="${apiUrl}"></script>`;
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Embed code copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -106,10 +125,13 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex justify-end space-x-2">
-              <button onClick={() => openModal(client)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
+              <button onClick={() => setEmbedCodeClient(client)} className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition" title="Get Embed Code">
+                <Code className="w-5 h-5" />
+              </button>
+              <button onClick={() => openModal(client)} className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Edit">
                 <Edit2 className="w-5 h-5" />
               </button>
-              <button onClick={() => handleDelete(client.id)} className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+              <button onClick={() => handleDelete(client.id)} className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
                 <Trash2 className="w-5 h-5" />
               </button>
             </div>
@@ -196,6 +218,49 @@ const Dashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {embedCodeClient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">
+                Embed Code for {embedCodeClient.name}
+              </h3>
+              <button onClick={() => setEmbedCodeClient(null)} className="text-gray-500 hover:text-gray-700">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Copy and paste this code into your website's HTML, just before the closing <code className="bg-gray-100 px-1 rounded">&lt;/body&gt;</code> tag:
+            </p>
+            <div className="relative">
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto font-mono">
+                {generateEmbedCode(embedCodeClient.chatbotId)}
+              </pre>
+              <button
+                onClick={() => copyToClipboard(generateEmbedCode(embedCodeClient.chatbotId))}
+                className="absolute top-2 right-2 p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+                title="Copy to clipboard"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The widget will connect to the middleware at <code className="bg-blue-100 px-1 rounded">{MIDDLEWARE_URL}</code>
+              </p>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setEmbedCodeClient(null)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

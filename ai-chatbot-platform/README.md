@@ -72,6 +72,13 @@ You need to create 3 collections in Pocketbase manually (or via migration if you
 3. Configure `.env`:
    ```env
    VITE_POCKETBASE_URL=http://127.0.0.1:8090
+   VITE_MIDDLEWARE_URL=http://localhost:3000
+   ```
+   
+   For production deployment (e.g., Coolify):
+   ```env
+   VITE_POCKETBASE_URL=https://your-pocketbase-url.com
+   VITE_MIDDLEWARE_URL=https://your-middleware-url.com
    ```
 4. Run locally:
    ```bash
@@ -85,16 +92,21 @@ You need to create 3 collections in Pocketbase manually (or via migration if you
 
 ## 4. Client Widget Integration
 
-To add the chatbot to a website, include the following script in the `<body>` tag:
+To add the chatbot to a website, click the **Code** icon on any chatbot in the Dashboard to get the embed code. It looks like:
 
 ```html
 <script 
-  src="http://YOUR_VPS_IP/widget.js" 
-  data-chatbot-id="YOUR_CHATBOT_ID_HERE">
+  src="https://YOUR_FRONTEND_URL/widget.js" 
+  data-chatbot-id="YOUR_CHATBOT_ID_HERE"
+  data-api-url="https://YOUR_MIDDLEWARE_URL/api/v1/chat">
 </script>
 ```
 
-*Note: You need to host `widget.js` (found in `/admin-frontend/public/widget.js`) somewhere accessible, or bundle it with your backend.*
+### Attributes
+- `data-chatbot-id`: The unique ID of your chatbot (required)
+- `data-api-url`: The URL of your middleware API endpoint (required for production, defaults to localhost for local dev)
+
+*Note: The widget is automatically served from your admin frontend. The Dashboard generates the correct embed code with your middleware URL.*
 
 ## Deployment on VPS
 
