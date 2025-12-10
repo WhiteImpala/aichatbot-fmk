@@ -8,18 +8,21 @@ const PRESETS = {
         primaryColor: '#4F46E5',
         backgroundColor: '#ffffff',
         textColor: '#1f2937',
+        userTextColor: '#ffffff',
         borderRadius: '12px',
     },
     dark: {
         primaryColor: '#6366f1',
         backgroundColor: '#1f2937',
         textColor: '#f9fafb',
+        userTextColor: '#ffffff',
         borderRadius: '12px',
     },
     minimal: {
         primaryColor: '#000000',
         backgroundColor: '#ffffff',
         textColor: '#000000',
+        userTextColor: '#ffffff',
         borderRadius: '0px',
     }
 };
@@ -52,7 +55,11 @@ const ThemeEditor = () => {
             });
             setClient(record);
             if (record.themeConfig && Object.keys(record.themeConfig).length > 0) {
-                setTheme(record.themeConfig);
+                // Ensure default props exist for new features
+                setTheme({
+                    ...PRESETS.light,
+                    ...record.themeConfig
+                });
             }
             setLoading(false);
         } catch (error) {
@@ -76,6 +83,12 @@ const ThemeEditor = () => {
 
     const handlePresetChange = (presetName) => {
         setTheme(PRESETS[presetName]);
+    };
+
+    const handleReset = () => {
+        if (window.confirm('Reset theme to default Light preset?')) {
+            setTheme(PRESETS.light);
+        }
     };
 
     if (loading) return <div className="p-8">Loading...</div>;
@@ -108,6 +121,14 @@ const ThemeEditor = () => {
                             <Smartphone className="w-5 h-5" />
                         </button>
                     </div>
+                    <button
+                        onClick={handleReset}
+                        className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                        title="Reset to Default"
+                    >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Reset
+                    </button>
                     <button
                         onClick={handleSave}
                         className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
@@ -178,7 +199,7 @@ const ThemeEditor = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Text Color</label>
+                                    <label className="block text-xs text-gray-500 mb-1">Text Color (Bot)</label>
                                     <div className="flex items-center space-x-2">
                                         <input
                                             type="color"
@@ -190,6 +211,23 @@ const ThemeEditor = () => {
                                             type="text"
                                             value={theme.textColor}
                                             onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
+                                            className="flex-1 text-sm border-gray-300 rounded-md"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1">User Text Color</label>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="color"
+                                            value={theme.userTextColor || '#ffffff'}
+                                            onChange={(e) => setTheme({ ...theme, userTextColor: e.target.value })}
+                                            className="h-8 w-8 rounded cursor-pointer border-0"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={theme.userTextColor || '#ffffff'}
+                                            onChange={(e) => setTheme({ ...theme, userTextColor: e.target.value })}
                                             className="flex-1 text-sm border-gray-300 rounded-md"
                                         />
                                     </div>

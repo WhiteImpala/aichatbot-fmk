@@ -30,6 +30,7 @@
         primaryColor: '#4F46E5',
         backgroundColor: '#ffffff',
         textColor: '#1f2937',
+        userTextColor: '#ffffff',
         borderRadius: '12px'
     };
 
@@ -41,6 +42,7 @@
             --chat-primary: ${defaultTheme.primaryColor};
             --chat-bg: ${defaultTheme.backgroundColor};
             --chat-text: ${defaultTheme.textColor};
+            --chat-user-text: ${defaultTheme.userTextColor};
             --chat-radius: ${defaultTheme.borderRadius};
             --chat-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -131,7 +133,7 @@
         .message.user {
             align-self: flex-end;
             background: var(--chat-primary);
-            color: white;
+            color: var(--chat-user-text);
             border-bottom-right-radius: 2px;
         }
         .message.bot {
@@ -254,6 +256,7 @@
         if (theme.primaryColor) root.style.setProperty('--chat-primary', theme.primaryColor);
         if (theme.backgroundColor) root.style.setProperty('--chat-bg', theme.backgroundColor);
         if (theme.textColor) root.style.setProperty('--chat-text', theme.textColor);
+        if (theme.userTextColor) root.style.setProperty('--chat-user-text', theme.userTextColor);
         if (theme.borderRadius) root.style.setProperty('--chat-radius', theme.borderRadius);
 
         // Update specific elements if needed
