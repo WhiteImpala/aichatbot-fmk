@@ -137,7 +137,7 @@
         .message.bot {
             align-self: flex-start;
             background: #E5E7EB;
-            color: #1F2937;
+            color: var(--chat-text);
             border-bottom-left-radius: 2px;
         }
         .chat-input-area {
