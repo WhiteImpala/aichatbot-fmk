@@ -3,6 +3,7 @@
     const SCRIPT_TAG = document.currentScript;
     const CHATBOT_ID = SCRIPT_TAG.getAttribute('data-chatbot-id');
     const API_URL = SCRIPT_TAG.getAttribute('data-api-url') || 'http://localhost:3000/api/v1/chat';
+    const CONFIG_URL = API_URL.replace('/chat', `/chatbot/${CHATBOT_ID}/config`);
 
     if (!CHATBOT_ID) {
         console.error('Chatbot Widget: Missing data-chatbot-id attribute');
@@ -24,21 +25,38 @@
     // Create Shadow DOM
     const shadow = host.attachShadow({ mode: 'open' });
 
+    // CSS Variables Defaults
+    const defaultTheme = {
+        primaryColor: '#4F46E5',
+        backgroundColor: '#ffffff',
+        textColor: '#1f2937',
+        borderRadius: '12px'
+    };
+
     // Styles
     const style = document.createElement('style');
+    // Using CSS Variables for theming
     style.textContent = `
+        :host {
+            --chat-primary: ${defaultTheme.primaryColor};
+            --chat-bg: ${defaultTheme.backgroundColor};
+            --chat-text: ${defaultTheme.textColor};
+            --chat-radius: ${defaultTheme.borderRadius};
+            --chat-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         .widget-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 9999;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: var(--chat-font);
         }
         .chat-button {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background-color: #4F46E5;
+            background-color: var(--chat-primary);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
@@ -60,8 +78,8 @@
             right: 0;
             width: 350px;
             height: 500px;
-            background: white;
-            border-radius: 12px;
+            background: var(--chat-bg);
+            border-radius: var(--chat-radius);
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
@@ -77,7 +95,7 @@
             transform: translateY(0);
         }
         .chat-header {
-            background: #4F46E5;
+            background: var(--chat-primary);
             color: white;
             padding: 16px;
             font-weight: bold;
@@ -96,21 +114,23 @@
             flex: 1;
             padding: 16px;
             overflow-y: auto;
-            background: #f9fafb;
+            background: #f9fafb; /* Inner background mainly static or derived? Let's keep it neutral for now, or match bg? */
+            background: ${defaultTheme.backgroundColor === '#ffffff' ? '#f9fafb' : 'rgba(255,255,255,0.05)'};
             display: flex;
             flex-direction: column;
             gap: 10px;
+            color: var(--chat-text);
         }
         .message {
             max-width: 80%;
             padding: 10px 14px;
-            border-radius: 12px;
+            border-radius: var(--chat-radius);
             font-size: 14px;
             line-height: 1.4;
         }
         .message.user {
             align-self: flex-end;
-            background: #4F46E5;
+            background: var(--chat-primary);
             color: white;
             border-bottom-right-radius: 2px;
         }
@@ -125,6 +145,7 @@
             border-top: 1px solid #E5E7EB;
             display: flex;
             gap: 10px;
+            background: var(--chat-bg);
         }
         .chat-input {
             flex: 1;
@@ -132,18 +153,20 @@
             border: 1px solid #D1D5DB;
             border-radius: 8px;
             outline: none;
+            font-family: inherit;
         }
         .chat-input:focus {
-            border-color: #4F46E5;
+            border-color: var(--chat-primary);
         }
         .send-btn {
-            background: #4F46E5;
+            background: var(--chat-primary);
             color: white;
             border: none;
             padding: 10px 16px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            font-family: inherit;
         }
         .send-btn:disabled {
             background: #9CA3AF;
@@ -157,6 +180,7 @@
         .typing-indicator.visible {
             display: block;
         }
+        /* Markdown tables */
         .message table {
             width: 100%;
             border-collapse: collapse;
@@ -185,7 +209,7 @@
     container.innerHTML = `
         <div class="chat-window">
             <div class="chat-header">
-                <span>Chat Support</span>
+                <span id="chat-title">Chat Support</span>
                 <button class="close-btn">&times;</button>
             </div>
             <div class="chat-messages"></div>
@@ -209,6 +233,7 @@
     const input = container.querySelector('.chat-input');
     const sendBtn = container.querySelector('.send-btn');
     const typingIndicator = container.querySelector('.typing-indicator');
+    const chatTitle = container.querySelector('#chat-title');
 
     // State
     let isOpen = false;
@@ -219,6 +244,56 @@
         chatWindow.classList.toggle('open', isOpen);
         if (isOpen) input.focus();
     }
+
+    function applyTheme(theme) {
+        if (!theme) return;
+
+        const root = shadow.host; // or container, but CSS vars on host is better if allowed
+
+        // We set vars on the host style 
+        if (theme.primaryColor) root.style.setProperty('--chat-primary', theme.primaryColor);
+        if (theme.backgroundColor) root.style.setProperty('--chat-bg', theme.backgroundColor);
+        if (theme.textColor) root.style.setProperty('--chat-text', theme.textColor);
+        if (theme.borderRadius) root.style.setProperty('--chat-radius', theme.borderRadius);
+
+        // Update specific elements if needed
+        // For dark mode backgrounds in message area, we might want to check luminosity?
+        // simple heuristic:
+        if (theme.backgroundColor && theme.backgroundColor.toLowerCase() !== '#ffffff') {
+            // Assume dark or colored bg, make message area slightly different
+            // This is a simple improvement, can be more robust
+            messagesContainer.style.background = 'rgba(0,0,0,0.05)';
+        } else {
+            messagesContainer.style.background = '#f9fafb';
+        }
+    }
+
+    async function fetchConfig() {
+        try {
+            const res = await fetch(CONFIG_URL);
+            if (res.ok) {
+                const config = await res.json();
+                if (config.themeConfig) {
+                    applyTheme(config.themeConfig);
+                }
+                if (config.name) {
+                    chatTitle.textContent = config.name;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch chatbot config:', e);
+        }
+    }
+
+    // Initialize
+    fetchConfig();
+
+    // Live Preview Listener
+    // The preview.html dispatches 'chatbot-theme-update'
+    window.addEventListener('chatbot-theme-update', (event) => {
+        applyTheme(event.detail);
+    });
+
 
     function parseMarkdown(text) {
         // 1. Escape HTML to prevent XSS (basic)

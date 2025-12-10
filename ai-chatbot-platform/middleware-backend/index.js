@@ -40,6 +40,31 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Get Chatbot Config (Public)
+app.get('/api/v1/chatbot/:chatbotId/config', async (req, res) => {
+    try {
+        const { chatbotId } = req.params;
+        await authenticateAdmin();
+
+        const clientRecord = await pb.collection('Clients').getFirstListItem(`chatbotId="${chatbotId}"`);
+
+        if (!clientRecord.isActive) {
+            return res.status(403).json({ error: 'Chatbot is inactive' });
+        }
+
+        // Return only public configuration
+        res.json({
+            chatbotId: clientRecord.chatbotId,
+            name: clientRecord.name,
+            themeConfig: clientRecord.themeConfig || {}, // Ensure it exists
+        });
+
+    } catch (error) {
+        console.error('Error fetching config:', error);
+        res.status(404).json({ error: 'Chatbot not found' });
+    }
+});
+
 // Routes
 app.post('/api/v1/chat', async (req, res) => {
     try {

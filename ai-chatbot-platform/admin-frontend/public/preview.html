@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #6b7280;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Chatbot Preview Site</h1>
+
+    <script>
+        // Get chatbotId from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatbotId = urlParams.get('chatbotId');
+
+        // Listen for live updates from parent window (Theme Editor)
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'THEME_UPDATE') {
+                const theme = event.data.theme;
+                const widgetHost = document.getElementById('ai-chatbot-widget-host');
+                if (widgetHost && widgetHost.shadowRoot) {
+                    // We need a way to tell the widget to update its style.
+                    // Since widget.js is inside shadowDOM, we might need a function exposed on window or custom event.
+                    // Let's dispatch a custom event on window that widget.js listens to.
+                    window.dispatchEvent(new CustomEvent('chatbot-theme-update', { detail: theme }));
+                }
+            }
+        });
+
+        if (chatbotId) {
+            // Inject Widget Script
+            const script = document.createElement('script');
+            script.src = '/widget.js';
+            script.setAttribute('data-chatbot-id', chatbotId);
+            // In preview, we might want to point to the actual middleware URL
+            // Assuming middleware is on localhost:3000 for dev env
+            // Or get it from query param if needed. 
+            // For now, let's assume default behavior of widget.js (which defaults to localhost:3000)
+            // But if VITE_MIDDLEWARE_URL is set in .env, widget.js might need to know it.
+            // widget.js defaults to: SCRIPT_TAG.getAttribute('data-api-url') || 'http://localhost:3000/api/v1/chat';
+            // Let's rely on default for now.
+
+            // To make sure the chat opens automatically for preview:
+            // We can wait for it to load.
+            document.body.appendChild(script);
+        }
+    </script>
+</body>
+
+</html>

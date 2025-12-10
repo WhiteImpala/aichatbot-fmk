@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import pb from '../lib/pocketbase';
-import { Plus, Trash2, Edit2, X, Copy, Code } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, Copy, Code, Palette } from 'lucide-react';
 
 // Get middleware URL from environment variable
 const MIDDLEWARE_URL = import.meta.env.VITE_MIDDLEWARE_URL || 'http://localhost:3000';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
@@ -26,6 +28,7 @@ const Dashboard = () => {
     try {
       const records = await pb.collection('Clients').getFullList({
         sort: '-created',
+        requestKey: null
       });
       setClients(records);
     } catch (error) {
@@ -125,6 +128,9 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex justify-end space-x-2">
+              <button onClick={() => navigate(`/chatbot/${client.id}/theme`)} className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition" title="Theme & Styling">
+                <Palette className="w-5 h-5" />
+              </button>
               <button onClick={() => setEmbedCodeClient(client)} className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition" title="Get Embed Code">
                 <Code className="w-5 h-5" />
               </button>

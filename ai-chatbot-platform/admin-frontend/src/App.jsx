@@ -4,6 +4,7 @@ import pb from './lib/pocketbase';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Logs from './pages/Logs';
+import ThemeEditor from './pages/ThemeEditor';
 import Layout from './components/Layout';
 
 function App() {
@@ -31,6 +32,11 @@ function App() {
             <Layout>
               <Dashboard />
             </Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/chatbot/:id/theme" element={
+          <ProtectedRoute>
+            <ThemeEditor />
           </ProtectedRoute>
         } />
         <Route path="/logs" element={
