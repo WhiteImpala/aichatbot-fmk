@@ -253,10 +253,17 @@
         const root = shadow.host; // or container, but CSS vars on host is better if allowed
 
         // We set vars on the host style 
+        console.log('Applying theme:', theme);
         if (theme.primaryColor) root.style.setProperty('--chat-primary', theme.primaryColor);
         if (theme.backgroundColor) root.style.setProperty('--chat-bg', theme.backgroundColor);
-        if (theme.textColor) root.style.setProperty('--chat-text', theme.textColor);
-        if (theme.userTextColor) root.style.setProperty('--chat-user-text', theme.userTextColor);
+        if (theme.textColor) {
+            console.log('Setting --chat-text to:', theme.textColor);
+            root.style.setProperty('--chat-text', theme.textColor);
+        }
+        if (theme.userTextColor) {
+            console.log('Setting --chat-user-text to:', theme.userTextColor);
+            root.style.setProperty('--chat-user-text', theme.userTextColor);
+        }
         if (theme.borderRadius) root.style.setProperty('--chat-radius', theme.borderRadius);
 
         // Update specific elements if needed
