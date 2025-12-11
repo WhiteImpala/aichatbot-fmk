@@ -271,7 +271,7 @@ const ThemeEditor = () => {
                     >
                         <iframe
                             ref={iframeRef}
-                            src={`/preview.html?chatbotId=${client.chatbotId}&apiUrl=${encodeURIComponent(import.meta.env.VITE_MIDDLEWARE_URL || 'http://localhost:3000/api/v1/chat')}`}
+                            src={`/preview.html?chatbotId=${client.chatbotId}&apiUrl=${encodeURIComponent((import.meta.env.VITE_MIDDLEWARE_URL || 'http://localhost:3000').replace(/\/$/, '') + '/api/v1/chat')}`}
                             className="w-full h-full border-0 bg-white"
                             title="Chatbot Preview"
                             onLoad={() => {
