@@ -44,6 +44,7 @@ const ThemeEditor = () => {
     useEffect(() => {
         // Send theme update to iframe whenever theme changes
         if (iframeRef.current && iframeRef.current.contentWindow) {
+            console.log('Main sending theme update:', theme);
             iframeRef.current.contentWindow.postMessage({ type: 'THEME_UPDATE', theme }, '*');
         }
     }, [theme]);

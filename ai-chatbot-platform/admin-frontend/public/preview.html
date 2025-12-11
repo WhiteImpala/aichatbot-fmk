@@ -38,12 +38,13 @@
         window.addEventListener('message', (event) => {
             if (event.data.type === 'THEME_UPDATE') {
                 const theme = event.data.theme;
+                console.log('Preview received theme update:', theme);
                 const widgetHost = document.getElementById('ai-chatbot-widget-host');
                 if (widgetHost && widgetHost.shadowRoot) {
-                    // We need a way to tell the widget to update its style.
-                    // Since widget.js is inside shadowDOM, we might need a function exposed on window or custom event.
-                    // Let's dispatch a custom event on window that widget.js listens to.
+                    console.log('Dispatching chatbot-theme-update event');
                     window.dispatchEvent(new CustomEvent('chatbot-theme-update', { detail: theme }));
+                } else {
+                    console.warn('Widget host or shadow root not found');
                 }
             }
         });
@@ -51,7 +52,8 @@
         if (chatbotId) {
             // Inject Widget Script
             const script = document.createElement('script');
-            script.src = '/widget.js';
+            // Cache busting
+            script.src = '/widget.js?v=' + new Date().getTime();
             script.setAttribute('data-chatbot-id', chatbotId);
 
             if (apiUrl) {
