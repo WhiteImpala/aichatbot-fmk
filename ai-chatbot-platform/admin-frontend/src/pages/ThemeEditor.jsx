@@ -91,7 +91,8 @@ const ThemeEditor = () => {
         }
     };
 
-    if (loading) return <div className="p-8">Loading...</div>;
+    // Removed blocking loading state to allow UI shell to render immediately
+    // if (loading) return <div className="p-8">Loading...</div>;
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
@@ -103,7 +104,7 @@ const ThemeEditor = () => {
                     </button>
                     <div>
                         <h1 className="text-xl font-bold text-gray-900">Theme Editor</h1>
-                        <p className="text-sm text-gray-500">{client.name}</p>
+                        <p className="text-sm text-gray-500">{client?.name || 'Loading...'}</p>
                     </div>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -259,28 +260,34 @@ const ThemeEditor = () => {
 
                 {/* Preview Area */}
                 <div className="flex-1 bg-gray-100 flex items-center justify-center p-8">
-                    <div
-                        className="transition-all duration-300 bg-white shadow-2xl overflow-hidden"
-                        style={{
-                            width: device === 'mobile' ? '375px' : '100%',
-                            height: device === 'mobile' ? '667px' : '100%',
-                            maxWidth: device === 'desktop' ? '1200px' : undefined,
-                            borderRadius: device === 'mobile' ? '30px' : '8px',
-                            border: device === 'mobile' ? '12px solid #1f2937' : 'none',
-                        }}
-                    >
-                        <iframe
-                            ref={iframeRef}
-                            src={`/preview.html?chatbotId=${client.chatbotId}&apiUrl=${encodeURIComponent((import.meta.env.VITE_MIDDLEWARE_URL || 'http://localhost:3000').replace(/\/$/, '') + '/api/v1/chat')}`}
-                            className="w-full h-full border-0 bg-white"
-                            title="Chatbot Preview"
-                            onLoad={() => {
-                                if (iframeRef.current && iframeRef.current.contentWindow) {
-                                    iframeRef.current.contentWindow.postMessage({ type: 'THEME_UPDATE', theme }, '*');
-                                }
+                    {loading ? (
+                        <div className="text-gray-500 flex items-center">
+                            <span className="mr-2">Loading preview...</span>
+                        </div>
+                    ) : (
+                        <div
+                            className="transition-all duration-300 bg-white shadow-2xl overflow-hidden"
+                            style={{
+                                width: device === 'mobile' ? '375px' : '100%',
+                                height: device === 'mobile' ? '667px' : '100%',
+                                maxWidth: device === 'desktop' ? '1200px' : undefined,
+                                borderRadius: device === 'mobile' ? '30px' : '8px',
+                                border: device === 'mobile' ? '12px solid #1f2937' : 'none',
                             }}
-                        />
-                    </div>
+                        >
+                            <iframe
+                                ref={iframeRef}
+                                src={`/preview.html?chatbotId=${client?.chatbotId}&apiUrl=${encodeURIComponent((import.meta.env.VITE_MIDDLEWARE_URL || 'http://localhost:3000').replace(/\/$/, '') + '/api/v1/chat')}`}
+                                className="w-full h-full border-0 bg-white"
+                                title="Chatbot Preview"
+                                onLoad={() => {
+                                    if (iframeRef.current && iframeRef.current.contentWindow) {
+                                        iframeRef.current.contentWindow.postMessage({ type: 'THEME_UPDATE', theme }, '*');
+                                    }
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

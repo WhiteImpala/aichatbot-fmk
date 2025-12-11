@@ -48,8 +48,8 @@
         if (chatbotId) {
             // Inject Widget Script
             const script = document.createElement('script');
-            // Cache busting
-            script.src = '/widget.js?v=' + new Date().getTime();
+            // Cache busting - Removed timestamp to allow caching, using static version
+            script.src = '/widget.js?v=1';
             script.setAttribute('data-chatbot-id', chatbotId);
 
             if (apiUrl) {
