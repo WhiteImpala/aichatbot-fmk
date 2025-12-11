@@ -32,6 +32,7 @@
         // Get chatbotId from URL
         const urlParams = new URLSearchParams(window.location.search);
         const chatbotId = urlParams.get('chatbotId');
+        const apiUrl = urlParams.get('apiUrl');
 
         // Listen for live updates from parent window (Theme Editor)
         window.addEventListener('message', (event) => {
@@ -52,13 +53,10 @@
             const script = document.createElement('script');
             script.src = '/widget.js';
             script.setAttribute('data-chatbot-id', chatbotId);
-            // In preview, we might want to point to the actual middleware URL
-            // Assuming middleware is on localhost:3000 for dev env
-            // Or get it from query param if needed. 
-            // For now, let's assume default behavior of widget.js (which defaults to localhost:3000)
-            // But if VITE_MIDDLEWARE_URL is set in .env, widget.js might need to know it.
-            // widget.js defaults to: SCRIPT_TAG.getAttribute('data-api-url') || 'http://localhost:3000/api/v1/chat';
-            // Let's rely on default for now.
+
+            if (apiUrl) {
+                script.setAttribute('data-api-url', apiUrl);
+            }
 
             // To make sure the chat opens automatically for preview:
             // We can wait for it to load.
